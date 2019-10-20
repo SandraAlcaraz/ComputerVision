@@ -44,8 +44,8 @@ def processFrame(cap):
     plt.xticks([]),plt.yticks([])
 
 def get_skin_mask(hsvImage):
-    lowerRed1 = (0,45,80)
-    upperRed1 = (20,255,255)
+    lowerRed1 = (0,45,100)
+    upperRed1 = (13,255,255)
     maskRed1 = cv2.inRange(hsvImage, lowerRed1, upperRed1)
     lowerRed2 = (170,45,80)
     upperRed2 = (180,255,255)
@@ -62,12 +62,14 @@ def skin_binarization(hsv_image):
         Assumes HSV image
     '''
     k_size = 5
-    iterations = 2
+    gauss_size = 3
+    iterations = 3
 
     mask = get_skin_mask(hsv_image)
     kernel = np.ones((k_size, k_size), np.uint8)
     maskClosed = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=iterations)
-    segmented_hsv = applyMask(maskClosed, hsv_image)
+    blurred_mask = cv2.GaussianBlur(maskClosed, (gauss_size, gauss_size), cv2.BORDER_DEFAULT)
+    segmented_hsv = applyMask(blurred_mask, hsv_image)
     new_img = cv2.cvtColor(segmented_hsv, cv2.COLOR_HSV2RGB)
 
     return new_img
