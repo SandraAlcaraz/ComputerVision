@@ -9,7 +9,7 @@ def start_camera():
 
     while(cap.isOpened()):
         processFrame(cap)
-        
+
         press = plt.waitforbuttonpress(0.01)
         if press is None or press == False:
             pass
@@ -22,7 +22,7 @@ def start_camera():
 
 def processFrame(cap):
     _, frame = cap.read()
-    
+
     hsvImage = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     mask = get_skin_mask(hsvImage)
@@ -45,13 +45,10 @@ def processFrame(cap):
 
 def get_skin_mask(hsvImage):
     lowerRed1 = (0,48,90)#50
-    upperRed1 = (13,205,255)
+    upperRed1 = (14,230,255)
     maskRed1 = cv2.inRange(hsvImage, lowerRed1, upperRed1)
-    lowerRed2 = (170,45,80)
-    upperRed2 = (180,255,255)
-    #maskRed2 = cv2.inRange(hsvImage, lowerRed2, upperRed2)
     maskRed = maskRed1 #+ maskRed2
-    
+
     return maskRed
 
 def applyMask(mask, hsvImage):
@@ -61,9 +58,9 @@ def skin_binarization(hsv_image):
     '''
         Assumes HSV image
     '''
-    k_size = 7
+    k_size = 5
     gauss_size = 3
-    iterations = 3
+    iterations = 1
 
     hsv_image = cv2.GaussianBlur(hsv_image, (gauss_size, gauss_size), cv2.BORDER_DEFAULT)
 
