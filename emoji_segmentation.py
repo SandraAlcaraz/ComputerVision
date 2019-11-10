@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from cv2 import cv2
 from skin_detector.cv_helpers import cv2_show_img, plt_show_img, start_cv_video
@@ -7,15 +8,18 @@ RGB_BLUE = (0, 255, 0)
 RGB_GREEN = (0, 0, 255)
 
 def filter(img, *params):
+    original = img.copy()
     kernel = np.ones((3,3),np.uint8)
-    result = img.copy()
 
     img = apply_sobel(img)
     img = grayscale_binarization(img, threshold=10, bin_val=255)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, 2)
 
-    result = draw_contours(img)
-    #result = draw_circles(img)
+    circles = obtain_circle_positions(img)
+    export_circle_regions(original, circles, 5)
+    
+    # result = draw_contours(img)
+    result = draw_circles(img, original, 'squares', 5)
 
     return result
 
@@ -36,20 +40,44 @@ def draw_contours(img):
     cv2.drawContours(output, filtered_cnt, -1, RGB_RED, 2)
     return output
 
-def draw_circles(img):
-    output = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+def export_circle_regions(img, circles, shift=0):
+    try:
+        os.mkdir('roi/')
+    except Exception as e:
+        print(e)
+    for i, (x, y, r) in enumerate(circles):
+        top = y-r-shift if y-r-shift >= 0 else 0
+        bottom = y+r+shift if y+r+shift < img.shape[0] else img.shape[0]-1
+        left = x-r-shift if x-r-shift >= 0 else 0
+        right = x+r+shift if x+r+shift < img.shape[1] else img.shape[1]-1
+        crop = img[top:bottom,left:right].copy()
+        try:
+            bgr = cv2.cvtColor(crop, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(os.path.join('roi', f'{i}.jpg'), bgr)
+        except Exception as e:
+            print(e)
+        
+
+def obtain_circle_positions(img):
     circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.2, minDist=100)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
     if circles is not None:
         # convert the (x, y) coordinates and radius of the circles to integers
         circles = np.round(circles[0, :]).astype("int")
-
+    return circles
+    
+def draw_circles(img, original, type='circles', shift=0):
+    circles = obtain_circle_positions(img)
+    if circles is not None:
         for (x, y, r) in circles:
             # draw the circle in the output image, then draw a rectangle
             # corresponding to the center of the circle
-            cv2.circle(output, (x, y), r, RGB_GREEN, 4)
-            cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), RGB_GREEN, -1)
+            if type == 'squares':
+                cv2.rectangle(original, (x - r - shift, y - r - shift), (x + r + shift, y + r + shift), RGB_GREEN, 2)
+            else:
+                cv2.circle(original, (x, y), r, RGB_GREEN, 4)
+            cv2.rectangle(original, (x - 5, y - 5), (x + 5, y + 5), RGB_GREEN, -1)
     
-    return output
+    return original
 
 def increase_sat(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV).astype('float32')
