@@ -26,9 +26,9 @@ if __name__ == '__main__':
                 resized = resize_image(img)
                 features = obtain_hog_features(resized)
                 if df is None:
-                    df = pd.DataFrame(columns=list(range(features.shape[0])))
+                    df = pd.DataFrame(columns=['X{0}'.format(i) for i in list(range(features.shape[0]))])
                 df.loc[file] = features
-        df.to_csv('features.csv', header=False)
+        df.to_csv('features.csv', header=True)
 
     except Exception as e:
         print(e)
