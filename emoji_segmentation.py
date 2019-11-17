@@ -16,17 +16,18 @@ def emoji_segmentation(img):
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, 2)
 
     circles = obtain_circle_positions(img)
-    result, mask = draw_circles(circles, original, 'squares', 5)
+    result, mask = draw_circles(circles, original, 'squares', 1.2)
     
-    return circles, mask
+    return circles, mask, result
 
-def get_circle_regions(img, circles, shift=0):
+def get_circle_regions(img, circles, shift=1):
     crops = []
     for (x, y, r) in circles:
-        top = y-r-shift if y-r-shift >= 0 else 0
-        bottom = y+r+shift if y+r+shift < img.shape[0] else img.shape[0]-1
-        left = x-r-shift if x-r-shift >= 0 else 0
-        right = x+r+shift if x+r+shift < img.shape[1] else img.shape[1]-1
+        r = int(r * shift)
+        top = y-r if y-r >= 0 else 0
+        bottom = y+r if y+r < img.shape[0] else img.shape[0]-1
+        left = x-r if x-r >= 0 else 0
+        right = x+r if x+r < img.shape[1] else img.shape[1]-1
         crop = img[top:bottom,left:right].copy()
         crops.append(crop)
 
@@ -37,29 +38,36 @@ def export_circle_regions(regions):
         os.mkdir('roi/')
     except Exception as e:
         print(e)
-
+    
+    n = len(os.listdir('roi/'))
     for i, crop in enumerate(regions):
         try:
             bgr = cv2.cvtColor(crop, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(os.path.join('roi', f'{i}.jpg'), bgr)
+            cv2.imwrite(os.path.join('roi', f'{i + n}_{3}.jpg'), bgr)
         except Exception as e:
             print(e)
         
 
 def obtain_circle_positions(img):
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.2, minDist=100)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
+    try:
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.6, minDist=90, maxRadius=250, minRadius=20)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
+    except Exception as e:
+        print(e)
+
+    print("Finding circles...")
     if circles is not None:
         # convert the (x, y) coordinates and radius of the circles to integers
         circles = np.round(circles[0, :]).astype("int")
     return circles
     
-def draw_circles(circles, original, type='circles', shift=0):
+def draw_circles(circles, original, type='circles', shift=1):
     mask = np.zeros((original.shape[0], original.shape[1], 3), 'uint8')
     if circles is not None:
         for (x, y, r) in circles:
+            r = int(r * shift)
             cv2.circle(mask, (x, y), r, (1,1,1), -1)
             if type == 'squares':
-                cv2.rectangle(original, (x - r - shift, y - r - shift), (x + r + shift, y + r + shift), RGB_GREEN, 2)
+                cv2.rectangle(original, (x - r, y - r), (x + r, y + r), RGB_BLUE, 3)
             else:
                 cv2.circle(original, (x, y), r, RGB_GREEN, 4)
             cv2.rectangle(original, (x - 5, y - 5), (x + 5, y + 5), RGB_GREEN, -1)
@@ -93,21 +101,17 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Emoji segmentation')
-    parser.add_argument('-i', '--image', type=str, action='store', dest='src_img', help='The input image')
+    parser.add_argument('-i', '--image', type=str, action='store', dest='src_img', required=True, help='The input image')
     args = parser.parse_args()
 
-    if args.src_img:
-        try:
-            img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            circles, mask = emoji_segmentation(img)
-            cropped_imgs = get_circle_regions(img, circles, 5)
-            export_circle_regions(cropped_imgs)
+    try:
+        img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        circles, mask, drawn = emoji_segmentation(img)
+        cropped_imgs = get_circle_regions(img, circles, 1.2)
+        export_circle_regions(cropped_imgs)
 
-            plt_show_img(mask)
+        plt_show_img(drawn)
 
-        except Exception as error:
-            print(error)
-
-    else:
-        pass#start_cv_video(0, emoji_segmentation)
+    except Exception as error:
+        print(error)

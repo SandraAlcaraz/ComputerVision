@@ -1,6 +1,9 @@
 import csv
 import pandas as pd
+import imutils
 from cv2 import cv2
+
+from skin_detector.cv_helpers import plt_show_img
 
 def obtain_hog_features(img):
     hog = cv2.HOGDescriptor()
@@ -20,21 +23,20 @@ if __name__ == '__main__':
     parser.add_argument('--tag', type=str, action='store', dest='tag', required=True, help='Tag name')
     args = parser.parse_args()
     
-    df = None
+    df = pd.DataFrame(columns=list(range(680400)))
 
     try:
         for file in glob.glob(f'{args.path}*.jpg'):
             img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
             if img.shape[0] != img.shape[1]: continue # Skip non-square images
-            resized = resize_image(img)
+            resized = resize_image(img, 200)
+            print('after resize')
+            #left = imutils.rotate(resized, 30)
+            #plt_show_img(resized)
             features = obtain_hog_features(resized)
+            df = df.append(pd.Series(features), ignore_index=True)
 
-            if df is None:
-                df = pd.DataFrame(columns=[f'X{i}' for i in list(range(features.shape[0]))])
-
-            df.loc[file] = features
-
-        df.to_csv(f'{args.tag}_features.csv', header=True)
+        df.to_csv(f'{args.tag}_features.csv', header=False)
 
     except Exception as e:
         print(e)
