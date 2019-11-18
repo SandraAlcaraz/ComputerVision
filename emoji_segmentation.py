@@ -16,20 +16,21 @@ def emoji_segmentation(img):
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, 2)
 
     circles = obtain_circle_positions(img)
-    result, mask = draw_circles(circles, original, 'squares', 1.2)
+    drawn_circles, mask = draw_circles(circles, original, 'squares', 1.2)
     
-    return circles, mask, result
+    return circles, mask, drawn_circles
 
 def get_circle_regions(img, circles, shift=1):
     crops = []
-    for (x, y, r) in circles:
+    for circle in circles:
+        (x, y, r) = circle
         r = int(r * shift)
         top = y-r if y-r >= 0 else 0
         bottom = y+r if y+r < img.shape[0] else img.shape[0]-1
         left = x-r if x-r >= 0 else 0
         right = x+r if x+r < img.shape[1] else img.shape[1]-1
         crop = img[top:bottom,left:right].copy()
-        crops.append(crop)
+        crops.append((crop, circle))
 
     return crops
 
@@ -42,7 +43,8 @@ def export_circle_regions(regions):
     n = len(os.listdir('roi/'))
     for i, crop in enumerate(regions):
         try:
-            bgr = cv2.cvtColor(crop, cv2.COLOR_RGB2BGR)
+            img, _ = crop
+            bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             cv2.imwrite(os.path.join('roi', f'{i + n}_{3}.jpg'), bgr)
         except Exception as e:
             print(e)
