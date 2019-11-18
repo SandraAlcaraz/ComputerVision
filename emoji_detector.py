@@ -14,9 +14,15 @@ def detect_emoji(frame):
     return frame#mask * frame
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Emoji segmentation')
+    parser.add_argument('-i', '--image', type=str, action='store', dest='src_img', required=True, help='The input image')
+    args = parser.parse_args()
 
     try:
-        start_cv_video(2, img_filter=detect_emoji)
+        #img = cv2.imr
+        #start_cv_video(2, img_filter=detect_emoji)
 
     except Exception as error:
         print(error)
