@@ -8,6 +8,16 @@ RGB_BLUE = (0, 255, 0)
 RGB_GREEN = (0, 0, 255)
 
 def emoji_segmentation(img):
+    """Finds circles in an image.
+
+    Parameters:
+        img -- The input image
+
+    Returns:
+        List[(int, int, int)] -- List of center and radius of found circles (x,y,r)
+        binary image -- mask with areas of found circles 
+        image -- Original image with found circles drawn on it
+    """
     original = img.copy()
     kernel = np.ones((3,3),np.uint8)
 
@@ -21,9 +31,19 @@ def emoji_segmentation(img):
     return circles, mask, drawn_circles
 
 def get_circle_regions(img, circles, shift=1):
+    """Crops areas according to the positions of the given circles.
+
+    Parameters:
+        img -- The input image
+        circles -- List[(int, int, int)]: The list of positions and radius of circles
+        shift -- int: the radius multiplier (default=1)
+    
+    Return:
+        List[(image, (int,int,int))] -- A list of cropped images with its coordinates (x,y,r)
+    """
     crops = []
     for circle in circles:
-        (x, y, r) = circle
+        x, y, r = circle
         r = int(r * shift)
         top = y-r if y-r >= 0 else 0
         bottom = y+r if y+r < img.shape[0] else img.shape[0]-1
