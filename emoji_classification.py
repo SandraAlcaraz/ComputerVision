@@ -3,8 +3,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 
-import pandas as pd
+import modin.pandas as pd
 import os
+import pickle
 
 if __name__ == "__main__":
 
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     
     for file in training_dir:
         i, _ = file.split('_')
+        print('Read file ' + file)
         features_df[int(i)] = pd.read_csv('features/'+ file, index_col = 0)
 
     X = pd.concat(features_df, ignore_index=True)
