@@ -1,5 +1,6 @@
 import cv2 as cv2
 import numpy as np
+import os
 
 from skin_detector.cv_helpers import plt_show_img
 
@@ -44,11 +45,14 @@ def process_image(img):
     return img
 
 def draw_contours(img):
-    output = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    original = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    output = original.copy()
     img = process_image(img)
 
     contours, hier = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     filtered_cnt = []
+    emoji_rois = []
+
     #print(hier)
     for i, cnt in enumerate(contours):
         #perimeter = cv2.arcLength(cnt, True)
@@ -59,19 +63,39 @@ def draw_contours(img):
         #cy = int(M['m01']/M['m00'])
         #print(hier[0][i])
         if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20):  
-            print(area) 
+            #print(area) 
             filtered_cnt.append(cnt)
-            x,y,w,h = cv2.boundingRect(cnt)
-            cv2.rectangle(output, (x,y),(x+w,y+h), RGB_GREEN, 1)
-            #ROI = image[y:y+h, x:x+w]
-        #cv2.drawContours(output, perimeter_points, -1, RGB_BLUE, 10)
+    
+    for cnt in filtered_cnt:
+        x,y,w,h = cv2.boundingRect(cnt)
+        roi = output[y:y+h, x:x+w].copy()
+        emoji_rois.append(roi)
+        cv2.rectangle(original, (x,y),(x+w,y+h), RGB_GREEN, 1)
 
     cv2.drawContours(output, filtered_cnt, -1, RGB_RED, 1)
-    return output
+    return original, emoji_rois
+
+def export_emoji_roi(regions):
+    try:
+        os.mkdir('roi_emoji/')
+    except Exception as e:
+        print(e)
+    
+    n = len(os.listdir('roi_emoji/'))
+    for i, img in enumerate(regions):
+        try:
+            bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(os.path.join('roi_emoji', f'{i + n}.jpg'), bgr)
+        except Exception as e:
+            print(e)
 
 if __name__ == "__main__":
-    img = cv2.imread('roi/6/35.jpg', cv2.IMREAD_GRAYSCALE)
-    if img.shape[0] == img.shape[1]:
-        img = resize_image(img, 200)
-        img = draw_contours(img)
-        plt_show_img(img)
+    import glob
+
+    for file in glob.glob(f'roi/*/*.jpg'):
+        img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+        if img.shape[0] == img.shape[1]:
+            img = resize_image(img, 200)
+            img, rois = draw_contours(img)
+            export_emoji_roi(rois)
+            #plt_show_img(img)
