@@ -54,7 +54,7 @@ def get_circle_regions(img, circles, shift=1):
 
     return crops
 
-def export_circle_regions(regions):
+def export_circle_regions(regions, j):
     try:
         os.mkdir('roi/')
     except Exception as e:
@@ -65,14 +65,14 @@ def export_circle_regions(regions):
         try:
             img, _ = crop
             bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(os.path.join('roi', f'{i + n}_{3}.jpg'), bgr)
+            cv2.imwrite(os.path.join('roi', f'{i + n}_{j}.jpg'), bgr)
         except Exception as e:
             print(e)
         
 
 def obtain_circle_positions(img):
     try:
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.6, minDist=90, maxRadius=250, minRadius=20)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.8, minDist=90, maxRadius=250, minRadius=20)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
     except Exception as e:
         print(e)
 
@@ -131,7 +131,9 @@ if __name__ == '__main__':
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         circles, mask, drawn = emoji_segmentation(img)
         cropped_imgs = get_circle_regions(img, circles, 1.2)
-        export_circle_regions(cropped_imgs)
+        _, n = args.src_img.split('/')
+        n, _ = n.split('.')
+        export_circle_regions(cropped_imgs, n)
 
         plt_show_img(drawn)
 
