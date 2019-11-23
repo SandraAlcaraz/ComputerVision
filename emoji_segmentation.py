@@ -124,6 +124,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Emoji segmentation')
     parser.add_argument('-i', '--image', type=str, action='store', dest='src_img', required=True, help='The input image')
+    parser.add_argument('-s', '--save', action='store_true', dest='store', help='Store output?')
     args = parser.parse_args()
 
     try:
@@ -133,7 +134,8 @@ if __name__ == '__main__':
         cropped_imgs = get_circle_regions(img, circles, 1.2)
         _, n = args.src_img.split('/')
         n, _ = n.split('.')
-        export_circle_regions(cropped_imgs, n)
+        if args.store:
+            export_circle_regions(cropped_imgs, n)
 
         plt_show_img(drawn)
 
