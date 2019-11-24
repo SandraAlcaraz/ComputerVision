@@ -12,7 +12,7 @@ def resize_image(img, d=200):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
-def grayscale_binarization(img, threshold=127, bin_val=255): 
+def grayscale_binarization(img, threshold=127, bin_val=255):
     _ , img = cv2.threshold(img, threshold, bin_val, cv2.THRESH_BINARY)
     return img
 
@@ -41,7 +41,7 @@ def process_image(img):
     img = apply_sobel(img)
     img = grayscale_binarization(img, threshold=10, bin_val=255)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, 1)
-    
+
     return img
 
 def draw_contours(img):
@@ -64,7 +64,7 @@ def draw_contours(img):
         #cx = int(M['m10']/M['m00'])
         #cy = int(M['m01']/M['m00'])
         #print(hier[0][i])
-        if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20): 
+        if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20):
             if area > max_area:
                 max_area = area
                 max_cnt = cnt
@@ -80,7 +80,7 @@ def draw_contours(img):
         cy = int(M['m01']/M['m00'])
         if cx > max_x and cx < max_w and cy > max_y and cy < max_h:
             filtered_cnt2.append(cnt)
-    
+
     for cnt in filtered_cnt2:
         x,y,w,h = cv2.boundingRect(cnt)
         roi = output[y:y+h, x:x+w].copy()
@@ -90,27 +90,28 @@ def draw_contours(img):
     cv2.drawContours(output, filtered_cnt, -1, RGB_RED, 1)
     return original, emoji_rois
 
-def export_emoji_roi(regions):
+def export_emoji_roi(regions,t):
     try:
         os.mkdir('roi_emoji/')
     except Exception as e:
         print(e)
-    
+
     n = len(os.listdir('roi_emoji/'))
     for i, img in enumerate(regions):
         try:
             bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(os.path.join('roi_emoji', f'{i + n}.jpg'), bgr)
+            cv2.imwrite(os.path.join('roi_emoji', f'{i + n}_{t}.jpg'), bgr)
         except Exception as e:
             print(e)
 
 if __name__ == "__main__":
     import glob
 
-    for file in glob.glob(f'roi/1/*.jpg'):
+    t = 5
+    for file in glob.glob(f'roi/{t}/*.jpg'):
         img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
         if img.shape[0] == img.shape[1]:
             img = resize_image(img, 200)
             img, rois = draw_contours(img)
-            export_emoji_roi(rois)
+            export_emoji_roi(rois, t)
             #plt_show_img(img)

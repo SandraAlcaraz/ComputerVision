@@ -9,40 +9,32 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
-from keras.optimizers import SGD
+from keras.optimizers import SGD, RMSprop, Adam
 from sklearn.model_selection import train_test_split
 
-def resize_image(img, d=350):
+def resize_image(img, d=100):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
 def get_train_images():
     X = []
-    X_Filter = []
     Y = []
-    Y_Filter = []
     
     try:
         for i in range(0, 7):
             print('reading: ' + str(i))
-            for file in glob.glob(f'roi/{i}/*.jpg'):
+            for file in glob.glob(f'roi_emoji/{i}/*.jpg'):
                 img = cv2.imread(file)
-                if img.shape[0] != img.shape[1]: continue # Skip non-square images
                 resized = resize_image(img)
-                if i > 0:
-                    X.append(resized)
-                    Y.append(i-1)
-                X_Filter.append(resized)
-                Y_Filter.append(0 if i == 0 else 1)
+                X.append(resized)
+                Y.append(i)
     except Exception as e:
         print(e)
           
     X = np.array(X) / 255
     Y = np.reshape(np.array(Y), (-1, 1))
-    X_Filter = np.array(X_Filter) / 255
-    Y_Filter = np.reshape(np.array(Y_Filter), (-1, 1))
-
-    return X, Y, X_Filter, Y_Filter
+    
+    return X, Y
 
 
 
@@ -76,8 +68,8 @@ if __name__ == "__main__":
     parser.add_argument('-t', action='store_true', dest='retrain', help='Retrain?')
     args = parser.parse_args()
     
-    if args.retrain or not 'filter_model.h5' in os.listdir():
-        X, Y, _, _ = get_train_images()
+    if args.retrain or not 'filter_model_complete.h5' in os.listdir():
+        X, Y = get_train_images()
         
         test_size = 0.33
         seed = 5
@@ -91,15 +83,15 @@ if __name__ == "__main__":
         Y_cat_train = to_categorical(Y_train)
         Y_cat_test = to_categorical(Y_test)
         
-        n_classes = 6
+        n_classes = 7
         
         model = createModel(n_classes, input_shape)
         print('Got model')
-        opt = SGD(lr=0.01)
+        opt = Adam()
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 10
+        batch_size = 30
         epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
@@ -125,31 +117,11 @@ if __name__ == "__main__":
 
         model.save('filter_model_complete.h5')
         print('Model saved')
-        
-        # Loss Curves
-        plt.figure(figsize=[8,6])
-        plt.plot(history.history['loss'],'r',linewidth=3.0)
-        plt.plot(history.history['val_loss'],'b',linewidth=3.0)
-        plt.legend(['Training loss', 'Validation Loss'],fontsize=18)
-        plt.xlabel('Epochs ',fontsize=16)
-        plt.ylabel('Loss',fontsize=16)
-        plt.title('Loss Curves',fontsize=16)
-        
-        # Accuracy Curves
-        plt.figure(figsize=[8,6])
-        plt.plot(history.history['accuracy'],'r',linewidth=3.0)
-        plt.plot(history.history['val_accuracy'],'b',linewidth=3.0)
-        plt.legend(['Training Accuracy', 'Validation Accuracy'],fontsize=18)
-        plt.xlabel('Epochs ',fontsize=16)
-        plt.ylabel('Accuracy',fontsize=16)
-        plt.title('Accuracy Curves',fontsize=16)
-        
-        plt.show()
     else:
         model = keras.models.load_model('filter_model_complete.h5')
         print('Model extracted')
     
-        X, Y, _, _ = get_train_images()
+        X, Y = get_train_images()
         test_size = 0.33
         seed = 5
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
