@@ -97,14 +97,14 @@ if __name__ == "__main__":
         model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 2
-        epochs = 50
+        batch_size = 3
+        epochs = 40
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
                 rotation_range=20,  # randomly rotate images in the range (degrees, 0 to 180)
                 width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
                 height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-                horizontal_flip=True,  # randomly flip images
+                # horizontal_flip=True,  # randomly flip images
                 vertical_flip=True)  # randomly flip images
         print('Got datagen')
         
