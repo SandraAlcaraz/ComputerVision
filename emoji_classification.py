@@ -90,7 +90,7 @@ def draw_contours(img):
     cv2.drawContours(output, filtered_cnt, -1, RGB_RED, 1)
     return original, emoji_rois
 
-def export_emoji_roi(regions):
+def export_emoji_roi(regions,t):
     try:
         os.mkdir('roi_emoji/')
     except Exception as e:
@@ -100,17 +100,18 @@ def export_emoji_roi(regions):
     for i, img in enumerate(regions):
         try:
             bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(os.path.join('roi_emoji', f'{i + n}.jpg'), bgr)
+            cv2.imwrite(os.path.join('roi_emoji', f'{i + n}_{t}.jpg'), bgr)
         except Exception as e:
             print(e)
 
 if __name__ == "__main__":
     import glob
 
-    for file in glob.glob(f'roi/1/*.jpg'):
+    t = 1
+    for file in glob.glob(f'roi/{t}/*.jpg'):
         img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
         if img.shape[0] == img.shape[1]:
             img = resize_image(img, 200)
             img, rois = draw_contours(img)
-            export_emoji_roi(rois)
+            export_emoji_roi(rois, t)
             #plt_show_img(img)
