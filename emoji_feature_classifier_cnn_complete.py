@@ -91,7 +91,7 @@ if __name__ == "__main__":
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 20
+        batch_size = 30
         epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
