@@ -2,8 +2,10 @@ import keras
 import glob
 import os
 import argparse
+import random
 import numpy as np
 import matplotlib.pyplot as plt
+from skin_detector.cv_helpers import start_cv_video, plt_show_img
 from cv2 import cv2
 from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
@@ -119,17 +121,23 @@ if __name__ == "__main__":
         print('Model saved')
     else:
         model = keras.models.load_model('filter_model_complete.h5')
-        print('Model extracted')
-    
+        
         X, Y = get_train_images()
         test_size = 0.33
         seed = 5
+        
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+        
         nRows,nCols,nDims = X_train.shape[1:]
         X_train = X_train.reshape(X_train.shape[0], nRows, nCols, nDims)
         X_test = X_test.reshape(X_test.shape[0], nRows, nCols, nDims)
-        Y_cat_train = to_categorical(Y_train)
-        Y_cat_test = to_categorical(Y_test)
+        Y_filter_cat_train = to_categorical(Y_train)
+        Y_filter_cat_test = to_categorical(Y_test)
         
-        a = model.evaluate(X, to_categorical(Y))
-        print(a)
+        for _ in range(10):
+            t = random.randint(0, len(X_test)-1)
+            # a = model.evaluate(X, to_categorical(Y))
+            b = np.array([X_test[t]])
+            a = model.predict(b)
+            print(a)
+            plt_show_img(X_test[t])
