@@ -9,6 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
+from keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 
 def resize_image(img, d=350):
@@ -30,7 +31,7 @@ def get_train_images():
                 resized = resize_image(img)
                 if i > 0:
                     X.append(resized)
-                    Y.append(i)
+                    Y.append(i-1)
                 X_Filter.append(resized)
                 Y_Filter.append(0 if i == 0 else 1)
     except Exception as e:
@@ -90,15 +91,16 @@ if __name__ == "__main__":
         Y_cat_train = to_categorical(Y_train)
         Y_cat_test = to_categorical(Y_test)
         
-        n_classes = 2
+        n_classes = 6
         
         model = createModel(n_classes, input_shape)
         print('Got model')
-        model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+        opt = SGD(lr=0.01)
+        model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 3
-        epochs = 40
+        batch_size = 10
+        epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
                 rotation_range=20,  # randomly rotate images in the range (degrees, 0 to 180)
