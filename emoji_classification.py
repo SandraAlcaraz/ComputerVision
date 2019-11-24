@@ -12,7 +12,7 @@ def resize_image(img, d=130):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
-def grayscale_binarization(img, threshold=127, bin_val=255): 
+def grayscale_binarization(img, threshold=127, bin_val=255):
     _ , img = cv2.threshold(img, threshold, bin_val, cv2.THRESH_BINARY)
     return img
 
@@ -41,7 +41,7 @@ def process_image(img):
     img = apply_sobel(img)
     img = grayscale_binarization(img, threshold=10, bin_val=255)
     img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, 1)
-    
+
     return img
 
 def draw_contours(img):
@@ -64,7 +64,7 @@ def draw_contours(img):
         #cx = int(M['m10']/M['m00'])
         #cy = int(M['m01']/M['m00'])
         #print(hier[0][i])
-        if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20): 
+        if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20):
             if area > max_area:
                 max_area = area
                 max_cnt = cnt
@@ -80,7 +80,7 @@ def draw_contours(img):
         cy = int(M['m01']/M['m00'])
         if cx > max_x and cx < max_w and cy > max_y and cy < max_h:
             filtered_cnt2.append(cnt)
-    
+
     for cnt in filtered_cnt2:
         x,y,w,h = cv2.boundingRect(cnt)
         roi = output[y:y+h, x:x+w].copy()
@@ -95,7 +95,7 @@ def export_emoji_roi(regions,t):
         os.mkdir('roi_emoji/')
     except Exception as e:
         print(e)
-    
+
     n = len(os.listdir('roi_emoji/'))
     for i, img in enumerate(regions):
         try:
@@ -107,7 +107,7 @@ def export_emoji_roi(regions,t):
 if __name__ == "__main__":
     import glob
 
-    t = 1
+    t = 6
     for file in glob.glob(f'roi/{t}/*.jpg'):
         img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
         if img.shape[0] == img.shape[1]:
