@@ -42,6 +42,7 @@ def get_circle_regions(img, circles, shift=1):
         List[(image, (int,int,int))] -- A list of cropped images with its coordinates (x,y,r)
     """
     crops = []
+    if not circles: return []
     for circle in circles:
         x, y, r = circle
         r = int(r * shift)
