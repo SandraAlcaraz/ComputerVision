@@ -5,8 +5,16 @@ from cv2 import cv2
 
 EMOJI_1 = None
 
-def draw_emoji(frame, real_emoji, emoji_pos):
+EMOJI_DICT = {}
+
+def classify_emoji(img):
+    # calculate Hog
+    # use classifer
+    return 1
+
+def draw_emoji(frame, emoji_index, emoji_pos):
     print('Drawing...')
+    real_emoji = EMOJI_DICT.get(emoji_index)
     x, y, r = emoji_pos
     top = y - r
     bottom = y + r
@@ -14,7 +22,10 @@ def draw_emoji(frame, real_emoji, emoji_pos):
     rigth = x + r
 
     emoji = cv2.resize(real_emoji, (rigth - left, bottom - top))
-    frame[top:bottom, left:rigth] = emoji
+    overlap_area = frame[top:bottom, left:rigth]
+    merged_images = cv2.addWeighted(overlap_area, 0.4, emoji, 0.1, 0) 
+
+    frame[top:bottom, left:rigth] = merged_images
 
     return frame
 
@@ -25,10 +36,10 @@ def detect_emoji(frame):
     for emoji in possible_emojis:
         cropped_img, cropped_pos = emoji
         if not is_square(cropped_img): continue
-        # Calculate HoG
-        # Pass it to trained model
-        # if valid, then draw a real emoji
-        draw_emoji(frame, EMOJI_1, cropped_pos)
+        # Crop mouth if it is used HERE!
+        emoji_type = classify_emoji(cropped_img)
+        if emoji_type > 0:
+            draw_emoji(frame, emoji_type, cropped_pos)
 
     return frame# * mask
 
@@ -43,7 +54,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        EMOJI_1 = cv2.imread('emojis/1.png', cv2.IMREAD_COLOR)
+        for i in range(1, 7):
+            img = cv2.imread(f'emojis/{i}.png', cv2.IMREAD_COLOR)
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            EMOJI_DICT[i] = img
 
         img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
         plt_show_img(detect_emoji(img))
