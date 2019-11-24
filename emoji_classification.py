@@ -8,7 +8,7 @@ RGB_RED = (255, 0, 0)
 RGB_BLUE = (0, 0, 255)
 RGB_GREEN = (0, 255, 0)
 
-def resize_image(img, d=130):
+def resize_image(img, d=200):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
