@@ -30,7 +30,7 @@ def get_train_images():
                 resized = resize_image(img)
                 if i > 0:
                     X.append(resized)
-                    Y.append(i)
+                    Y.append(i-1)
                 X_Filter.append(resized)
                 Y_Filter.append(0 if i == 0 else 1)
     except Exception as e:
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         Y_cat_train = to_categorical(Y_train)
         Y_cat_test = to_categorical(Y_test)
         
-        n_classes = 2
+        n_classes = 6
         
         model = createModel(n_classes, input_shape)
         print('Got model')
