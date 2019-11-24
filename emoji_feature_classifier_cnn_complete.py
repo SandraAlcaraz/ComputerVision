@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', action='store_true', dest='retrain', help='Retrain?')
     args = parser.parse_args()
     
-    if args.retrain or not 'filter_model.h5' in os.listdir():
+    if args.retrain or not 'filter_model_complete.h5' in os.listdir():
         X, Y = get_train_images()
         
         test_size = 0.33
