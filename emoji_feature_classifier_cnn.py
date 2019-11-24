@@ -3,6 +3,7 @@ import glob
 import os
 import argparse
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 from cv2 import cv2
 from keras.models import Sequential
@@ -17,9 +18,7 @@ def resize_image(img, d=350):
 
 def get_train_images():
     X = []
-    X_Filter = []
     Y = []
-    Y_Filter = []
     
     try:
         for i in range(0, 7):
@@ -28,20 +27,15 @@ def get_train_images():
                 img = cv2.imread(file)
                 if img.shape[0] != img.shape[1]: continue # Skip non-square images
                 resized = resize_image(img)
-                if i > 0:
-                    X.append(resized)
-                    Y.append(i)
-                X_Filter.append(resized)
-                Y_Filter.append(0 if i == 0 else 1)
+                X.append(resized)
+                Y.append(0 if i == 0 else 1)
     except Exception as e:
         print(e)
           
     X = np.array(X) / 255
     Y = np.reshape(np.array(Y), (-1, 1))
-    X_Filter = np.array(X_Filter) / 255
-    Y_Filter = np.reshape(np.array(Y_Filter), (-1, 1))
 
-    return X, Y, X_Filter, Y_Filter
+    return X, Y
 
 
 
@@ -76,7 +70,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.retrain or not 'filter_model.h5' in os.listdir():
-        X, Y, X_filter, Y_filter = get_train_images()
+        X, Y = get_train_images()
         
         test_size = 0.33
         seed = 5
@@ -147,15 +141,22 @@ if __name__ == "__main__":
         model = keras.models.load_model('filter_model.h5')
         print('Model extracted')
     
-        X, Y, X_filter, Y_filter = get_train_images()
+        X, Y = get_train_images()
         test_size = 0.33
         seed = 5
-        X_filter_train, X_filter_test, Y_filter_train, Y_filter_test = train_test_split(X_filter, Y_filter, test_size=test_size, random_state=seed)
-        nRows,nCols,nDims = X_filter_train.shape[1:]
-        X_filter_train = X_filter_train.reshape(X_filter_train.shape[0], nRows, nCols, nDims)
-        X_filter_test = X_filter_test.reshape(X_filter_test.shape[0], nRows, nCols, nDims)
-        Y_filter_cat_train = to_categorical(Y_filter_train)
-        Y_filter_cat_test = to_categorical(Y_filter_test)
         
-        a = model.evaluate(X_filter, to_categorical(Y_filter))
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+        
+        nRows,nCols,nDims = X_train.shape[1:]
+        X_train = X_train.reshape(X_train.shape[0], nRows, nCols, nDims)
+        X_test = X_test.reshape(X_test.shape[0], nRows, nCols, nDims)
+        Y_filter_cat_train = to_categorical(Y_train)
+        Y_filter_cat_test = to_categorical(Y_test)
+        
+        t = random.randint(0, len(X_test)-1)
+        # a = model.evaluate(X, to_categorical(Y))
+        b = np.array([X_test[t]])
+        a = model.predict(b)
         print(a)
+        plt.imshow(X_test[t])
+        plt.show()
