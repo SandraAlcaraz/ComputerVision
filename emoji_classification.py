@@ -71,8 +71,17 @@ def draw_contours(img):
             filtered_cnt.append(cnt)
 
     filtered_cnt.remove(max_cnt)
-    
+    max_x, max_y , max_w, max_h = cv2.boundingRect(max_cnt)
+    filtered_cnt2 = []
+
     for cnt in filtered_cnt:
+        M = cv2.moments(cnt)
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        if cx > max_x and cx < max_w and cy > max_y and cy < max_h:
+            filtered_cnt2.append(cnt)
+    
+    for cnt in filtered_cnt2:
         x,y,w,h = cv2.boundingRect(cnt)
         roi = output[y:y+h, x:x+w].copy()
         emoji_rois.append(roi)
@@ -98,7 +107,7 @@ def export_emoji_roi(regions):
 if __name__ == "__main__":
     import glob
 
-    for file in glob.glob(f'roi/*/*.jpg'):
+    for file in glob.glob(f'roi/1/*.jpg'):
         img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
         if img.shape[0] == img.shape[1]:
             img = resize_image(img, 200)
