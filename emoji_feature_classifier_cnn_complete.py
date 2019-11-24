@@ -121,7 +121,7 @@ if __name__ == "__main__":
         model = keras.models.load_model('filter_model_complete.h5')
         print('Model extracted')
     
-        X, Y, _, _ = get_train_images()
+        X, Y = get_train_images()
         test_size = 0.33
         seed = 5
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
