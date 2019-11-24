@@ -54,6 +54,8 @@ def draw_contours(img):
     emoji_rois = []
 
     #print(hier)
+    max_area = -1
+    max_cnt = None
     for i, cnt in enumerate(contours):
         #perimeter = cv2.arcLength(cnt, True)
         #perimeter_points = cv2.approxPolyDP(cnt, 0.01 * perimeter, True)
@@ -62,9 +64,13 @@ def draw_contours(img):
         #cx = int(M['m10']/M['m00'])
         #cy = int(M['m01']/M['m00'])
         #print(hier[0][i])
-        if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20):  
-            #print(area) 
+        if area > 100 and hier[0][i][3] == -1: #(10 < len(perimeter_points) < 20): 
+            if area > max_area:
+                max_area = area
+                max_cnt = cnt
             filtered_cnt.append(cnt)
+
+    filtered_cnt.remove(max_cnt)
     
     for cnt in filtered_cnt:
         x,y,w,h = cv2.boundingRect(cnt)
