@@ -17,7 +17,7 @@ def obtain_hog_features(img):
     h = hog.compute(img)
     return h.flatten()
 
-def resize_image(img, d=130):
+def resize_image(img, d=300):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
@@ -34,7 +34,7 @@ def get_dataframes():
             for file in glob.glob(f'roi/{i}/*.jpg'):
                 img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
                 if img.shape[0] != img.shape[1]: continue # Skip non-square images
-                resized = resize_image(img, 200)
+                resized = resize_image(img)
                 #left = imutils.rotate(resized, 30)
                 #plt_show_img(resized)
                 features = obtain_hog_features(resized)
@@ -61,6 +61,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     X, X_SVM, Y, Y_SVM = get_dataframes()
+    print('got features')
     
     test_size = 0.33
     seed = 5
@@ -91,7 +92,7 @@ if __name__ == '__main__':
     # print(dtree_pred)
     
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
-    
+    print('got split')
     multiclass_filename = 'tree_model_multiclass.sav'
     if not args.retrain and 'tree_model_multiclass.sav' in os.listdir():
         dtree = pickle.load(open(multiclass_filename, 'rb'))
@@ -103,6 +104,12 @@ if __name__ == '__main__':
     dtree_pred = dtree.predict(X_test)
     print(Y_test)
     print(dtree_pred)
+    
+    for i, p in enumerate(Y_test):
+        if p == dtree_pred[i]:
+            print(True)
+        else:
+            print(False)
     
     
 
