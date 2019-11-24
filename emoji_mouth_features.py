@@ -51,8 +51,8 @@ def obtain_hog_features(img):
     winStride = (4,4)
     padding = (4,4)
     locations = ((5,10),)
-    h = hog.compute(img,winStride,padding,locations)
-    #h = hog.compute(img)
+    #h = hog.compute(img,winStride,padding,locations)
+    h = hog.compute(img)
     return h.flatten()
 
 def resize_image(img, d=130, d2=130):
@@ -71,7 +71,7 @@ def get_dataframes():
             for file in glob.glob(f'roi_emoji/{i}/*.jpg'):
                 print(file)
                 img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-                img = process_image(img)
+                #img = process_image(img)
                 img = resize_image(img, 700,500)
                 #plt_show_img(img)
                 features = obtain_hog_features(img)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     else:
         dtree_model = DecisionTreeClassifier()
         dtree = dtree_model.fit(X_train, Y_train)
-        #pickle.dump(dtree_model, open(multiclass_filename, 'wb'))
+        pickle.dump(dtree_model, open(multiclass_filename, 'wb'))
     
     dtree_pred = dtree.predict(X_test)
     print(Y_test)
