@@ -13,7 +13,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import SGD, RMSprop, Adam
 from sklearn.model_selection import train_test_split
 
-def resize_image(img, d=350):
+def resize_image(img, d=300):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
@@ -89,11 +89,11 @@ if __name__ == "__main__":
         
         model = createModel(n_classes, input_shape)
         print('Got model')
-        opt = Adam()
+        opt = RMSprop()
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 10
+        batch_size = 7
         epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
