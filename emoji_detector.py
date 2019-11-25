@@ -20,14 +20,19 @@ def classify_mouth(img):
     images = extract_face_features(img)
     max_score = 0
     max_index = 0
+    eyes_counter = 0
     for img in images:
         img = resize_image(img, 100)
         res = MOUTH_MODEL.predict(np.array([img])/255)[0]
         mx = max(res)
         i = res.tolist().index(mx)
-        if i > 0 and mx > max_score:
+        if i == 7:
+            eyes_counter += 1
+        elif i > 0 and mx > max_score:
             max_score = mx
             max_index = i
+
+    #if eyes_counter != 2: return 0
     return max_index
 
 def extract_face_features(img):
@@ -128,7 +133,6 @@ def detect_emoji(frame, recalculate):
     #             else:
     #                 true_emojis.append(emoji_c)
                     
-    
     for emoji in possible_emojis:
         if emoji is None: continue
         cropped_img, cropped_pos = emoji
@@ -193,11 +197,12 @@ def read_video(video='video.MOV'):
     out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
 
     while(cap.isOpened()):
+        print('Reading frames')
         ret, frame = cap.read()
         if ret:
             # Display the resulting frame
-            # cv2.imshow('', frame)
-            frame = detect_emoji(frame)
+            #cv2.imshow('', frame)
+            frame = detect_emoji(frame, True)
             out.write(frame)
 
             # Press Q on keyboard to  exit
@@ -225,11 +230,12 @@ if __name__ == '__main__':
             inverse_mask = cv2.bitwise_not(mask)
             emoji = cv2.bitwise_and(emoji, emoji, mask=mask)
             EMOJI_DICT[i] = emoji, inverse_mask
+        read_video()
 
-        img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
-        #cv2_show_img(detect_emoji(img))
+        #img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
+        #cv2_show_img(detect_emoji(img, True))
         # plt_show_img(detect_emoji(img))
-        start_cv_video(1, img_filter=detect_emoji)
+        #start_cv_video(1, img_filter=detect_emoji)
 
     except Exception as error:
         print(error)
