@@ -107,7 +107,7 @@ def export_emoji_roi(regions,t):
 if __name__ == "__main__":
     import glob
 
-    t = 5
+    t = 9
     for file in glob.glob(f'roi/{t}/*.jpg'):
         img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
         if img.shape[0] == img.shape[1]:
