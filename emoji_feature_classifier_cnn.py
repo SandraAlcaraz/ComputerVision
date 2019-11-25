@@ -92,8 +92,8 @@ if __name__ == "__main__":
         opt = Adam()
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])        print('Compile model')
 
-        batch_size = 3
-        epochs = 40
+        batch_size = 10
+        epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
                 rotation_range=20,  # randomly rotate images in the range (degrees, 0 to 180)
