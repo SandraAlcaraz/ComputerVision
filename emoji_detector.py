@@ -1,22 +1,23 @@
 from emoji_segmentation import emoji_segmentation, get_circle_regions
-from skin_detector.cv_helpers import start_cv_video, plt_show_img, cv2_show_img
+from skin_detector.cv_helpers import plt_show_img, cv2_show_img
 
 from cv2 import cv2
 import numpy as np
-import keras
-
-EMOJI_1 = None
+#import keras
 
 EMOJI_DICT = {}
-
-EMOJI_MODEL = keras.models.load_model('filter_model.h5')
-MOUTH_MODEL = keras.models.load_model('filter_model_complete.h5')
+#EMOJI_MODEL = keras.models.load_model('filter_model.h5')
+#MOUTH_MODEL = keras.models.load_model('filter_model_complete.h5')
+MASK_EMOJIS = None
+BACK_EMOJIS = None
 
 def classify_emoji(img):
+    return 1
     res = EMOJI_MODEL.predict(np.array([img]) / 255 )[0]
     return 1 if(res[1] > res[0]) else 0
 
 def classify_mouth(img):
+    return 1
     images = extract_face_features(img)
     max_score = 0
     max_index = 0
@@ -93,6 +94,10 @@ def draw_emoji(frame, emoji_index, emoji_pos):
 
     emoji = cv2.resize(real_emoji, (rigth - left, bottom - top))
     inverse_mask = cv2.resize(inverse_mask, (rigth - left, bottom - top))
+
+    MASK_EMOJIS[top:bottom, left:rigth] = cv2.bitwise_not(inverse_mask)
+    BACK_EMOJIS[top:bottom, left:rigth] = emoji
+
     overlap_area = frame[top:bottom, left:rigth]
     overlap_area = cv2.bitwise_and(overlap_area, overlap_area, mask=inverse_mask)
     overlap_area = cv2.add(overlap_area, emoji)
@@ -101,13 +106,15 @@ def draw_emoji(frame, emoji_index, emoji_pos):
     return frame
 
 possible_emojis = []
-def detect_emoji(frame, recalculate):
+def detect_emoji(frame):
     global possible_emojis
+    global MASK_EMOJIS, BACK_EMOJIS
     
-    if recalculate:
-        print('recalculating')
-        circles, mask, _ = emoji_segmentation(frame)
-        possible_emojis = get_circle_regions(frame, circles, 1.2)
+    MASK_EMOJIS = np.zeros((frame.shape[0], frame.shape[1]), dtype='uint8')
+    BACK_EMOJIS = np.zeros((frame.shape[0], frame.shape[1], 3), dtype='uint8')
+    print('recalculating')
+    circles, mask, _ = emoji_segmentation(frame)
+    possible_emojis = get_circle_regions(frame, circles, 1.2)
     
     # true_emojis = []
     # for emoji_p in possible_emojis:
@@ -137,7 +144,7 @@ def detect_emoji(frame, recalculate):
         if not emoji_type: continue
         draw_emoji(frame, emoji_type, cropped_pos)
 
-    return frame# * mask
+    return BACK_EMOJIS, MASK_EMOJIS#frame# * mask
 
 def is_square(img):
     return img.shape[0] == img.shape[1]
@@ -205,6 +212,36 @@ def read_video(video='video.MOV'):
     out.release()
     cv2.destroyAllWindows()
 
+def start_cv_video(camera = 0, img_filter = None):
+    cap = cv2.VideoCapture(camera)
+    print('Press q to exit...')
+    counter = 0
+    mask = None
+    emojis = None
+    _, frame = cap.read()
+    emojis, mask = img_filter(frame)
+    while(True):
+        _, frame = cap.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        if img_filter is not None:
+            if counter == 0:
+                emojis, mask = img_filter(frame)
+
+            if emojis is not None and mask is not None:
+                frame = cv2.bitwise_and(frame, frame, mask=mask)
+                frame = cv2.add(frame, emojis)
+
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        cv2.imshow('', frame)
+        print(counter)
+        counter += 1
+        counter = counter % 3
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
 if __name__ == '__main__':
     import argparse
 
@@ -223,9 +260,13 @@ if __name__ == '__main__':
             EMOJI_DICT[i] = emoji, inverse_mask
 
         img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
-        #cv2_show_img(detect_emoji(img))
+        emojis, mask = detect_emoji(img)
+        mask = cv2.bitwise_not(mask)
+        img = cv2.bitwise_and(img, img, mask=mask)
+        img = cv2.add(img, emojis)
+        cv2_show_img(img)
         # plt_show_img(detect_emoji(img))
-        start_cv_video(1, img_filter=detect_emoji)
+        #start_cv_video(1, img_filter=detect_emoji)
 
     except Exception as error:
         print(error)

@@ -15,7 +15,7 @@ def plt_show_img(img, title=''):
     plt.show()
 
 def cv2_show_img(img):
-    cv2.namedWindow("output", cv2.WINDOW_NORMAL)
+    #cv2.namedWindow("output", cv2.WINDOW_NORMAL)
     img = cv2.resize(img, (img.shape[1] // 3, img.shape[0] // 3))
     ANY_KEY = 0
     cv2.imshow('', img)
@@ -53,11 +53,19 @@ def start_cv_video(camera = 0, img_filter = None, *img_filter_params):
     cap = cv2.VideoCapture(camera)
     print('Press q to exit...')
     counter = 0
+    mask = None
+    emojis = None
+    _, frame = cap.read()
+    emojis, mask = img_filter(frame, *img_filter_params)
     while(True):
         _, frame = cap.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if img_filter is not None:
-            frame = img_filter(frame, *img_filter_params, counter == 0)
+            if counter == 0:
+                emojis, mask = img_filter(frame, *img_filter_params)
+        
+            frame = cv2.bitwise_and(frame, frame, mask=mask)
+            frame = cv2.add(frame, emojis)
 
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         cv2.imshow('', frame)
