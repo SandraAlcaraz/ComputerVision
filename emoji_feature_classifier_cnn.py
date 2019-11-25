@@ -12,6 +12,7 @@ from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import SGD, RMSprop, Adam
 from sklearn.model_selection import train_test_split
+from sklearn.utils import compute_class_weight
 
 def resize_image(img, d=300):
     dim = (d, d)
@@ -77,6 +78,8 @@ if __name__ == "__main__":
         seed = 5
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
         
+        class_weights = compute_class_weight('balanced', np.unique(Y_train.ravel()), Y_train.ravel())
+
         nRows,nCols,nDims = X_train.shape[1:]
         input_shape = (nRows, nCols, nDims)
         
@@ -89,11 +92,11 @@ if __name__ == "__main__":
         
         model = createModel(n_classes, input_shape)
         print('Got model')
-        opt = SGD()
+        opt = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 10
+        batch_size = 20
         epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
@@ -111,7 +114,8 @@ if __name__ == "__main__":
                                     steps_per_epoch=int(np.ceil(X_train.shape[0] / float(batch_size))),
                                     epochs=epochs,
                                     validation_data=(X_test, Y_cat_test),
-                                    workers=4)
+                                    workers=4,
+                                    class_weight=class_weights)
         print('Got history')
         
         model.evaluate(X_test, Y_cat_test)
