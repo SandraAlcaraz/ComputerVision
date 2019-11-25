@@ -10,6 +10,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
+from keras.optimizers import SGD, RMSprop, Adam
 from sklearn.model_selection import train_test_split
 
 def resize_image(img, d=350):
@@ -88,8 +89,8 @@ if __name__ == "__main__":
         
         model = createModel(n_classes, input_shape)
         print('Got model')
-        model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
-        print('Compile model')
+        opt = Adam()
+        model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])        print('Compile model')
 
         batch_size = 3
         epochs = 40
@@ -117,26 +118,6 @@ if __name__ == "__main__":
 
         model.save('filter_model.h5')
         print('Model saved')
-        
-        # Loss Curves
-        plt.figure(figsize=[8,6])
-        plt.plot(history.history['loss'],'r',linewidth=3.0)
-        plt.plot(history.history['val_loss'],'b',linewidth=3.0)
-        plt.legend(['Training loss', 'Validation Loss'],fontsize=18)
-        plt.xlabel('Epochs ',fontsize=16)
-        plt.ylabel('Loss',fontsize=16)
-        plt.title('Loss Curves',fontsize=16)
-        
-        # Accuracy Curves
-        plt.figure(figsize=[8,6])
-        plt.plot(history.history['accuracy'],'r',linewidth=3.0)
-        plt.plot(history.history['val_accuracy'],'b',linewidth=3.0)
-        plt.legend(['Training Accuracy', 'Validation Accuracy'],fontsize=18)
-        plt.xlabel('Epochs ',fontsize=16)
-        plt.ylabel('Accuracy',fontsize=16)
-        plt.title('Accuracy Curves',fontsize=16)
-        
-        plt.show()
     else:
         model = keras.models.load_model('filter_model.h5')
         print('Model extracted')
