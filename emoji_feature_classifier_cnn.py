@@ -97,7 +97,7 @@ if __name__ == "__main__":
         epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
-                rotation_range=20,  # randomly rotate images in the range (degrees, 0 to 180)
+                rotation_range=10,  # randomly rotate images in the range (degrees, 0 to 180)
                 width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
                 height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
                 # horizontal_flip=True,  # randomly flip images

@@ -10,24 +10,25 @@ EMOJI_1 = None
 EMOJI_DICT = {}
 
 EMOJI_MODEL = keras.models.load_model('filter_model.h5')
+MOUTH_MODEL = keras.models.load_model('filter_model_complete.h5')
 
 def classify_emoji(img):
-    res = EMOJI_MODEL.predict(np.array([img]) / 255 )
-    print(res)
-    plt_show_img(img)
-    # calculate Hog
-    # use classifer
-    # ML Model
-
-    return 1
+    res = EMOJI_MODEL.predict(np.array([img]) / 255 )[0]
+    return 1 if(res[1] > res[0]) else 0
 
 def classify_mouth(img):
     images = extract_face_features(img)
+    max_score = 0
+    max_index = 0
     for img in images:
         img = resize_image(img, 100)
-        # ML Model
-
-    return 1
+        res = MOUTH_MODEL.predict(np.array([img])/255)[0]
+        mx = max(res)
+        i = res.tolist().index(mx)
+        if i > 0 and mx > max_score:
+            max_score = mx
+            max_index = i
+    return max_index
 
 def extract_face_features(img):
     original = img.copy()
@@ -40,6 +41,8 @@ def extract_face_features(img):
     #mouth_emoji2 = get_mouth(new_filter)
 
     for mouth_emoji in new_filter:
+        if mouth_emoji is None:
+            continue
         M = cv2.moments(mouth_emoji)
         cy = int(M['m01']/M['m00'])
         x,y,w,h = cv2.boundingRect(mouth_emoji)
@@ -92,7 +95,6 @@ def get_contours(img):
     return filtered_cnt, max_cnt
 
 def draw_emoji(frame, emoji_index, emoji_pos):
-    print('Drawing...')
     real_emoji, inverse_mask = EMOJI_DICT.get(emoji_index)
     x, y, r = emoji_pos
     top = y - r
@@ -109,17 +111,41 @@ def draw_emoji(frame, emoji_index, emoji_pos):
 
     return frame
 
-def detect_emoji(frame):
-    circles, mask, _ = emoji_segmentation(frame)
-    possible_emojis = get_circle_regions(frame, circles, 1.2)
+possible_emojis = []
+def detect_emoji(frame, recalculate):
+    global possible_emojis
+    
+    if recalculate:
+        print('recalculating')
+        circles, mask, _ = emoji_segmentation(frame)
+        possible_emojis = get_circle_regions(frame, circles, 1.2)
+    
+    # true_emojis = []
+    # for emoji_p in possible_emojis:
+    #     _, (x, y, r) = emoji_p
+    #     for emoji_c in possible_emojis:
+    #         _, (x_c, y_c, r_c) = emoji_c
+    #         d = ((x-x_c)**2 + (y - y_c)**2)**0.5
+            
+    #         if r + r_c > d:
+    #             print('holiwis')
+    #             if r > r_c:
+    #                 # Sabemos que r_c está dentro
+    #                 true_emojis.append(emoji_p)
+    #             else:
+    #                 true_emojis.append(emoji_c)
+                    
     
     for emoji in possible_emojis:
         cropped_img, cropped_pos = emoji
+        if emoji is None:
+            continue
         if not is_square(cropped_img): continue
         cropped_img = resize_image(cropped_img)
         is_emoji = classify_emoji(cropped_img)
         if not is_emoji: continue
         emoji_type = classify_mouth(cropped_img)
+        if not emoji_type: continue
         draw_emoji(frame, emoji_type, cropped_pos)
 
     return frame# * mask
@@ -182,8 +208,8 @@ if __name__ == '__main__':
             EMOJI_DICT[i] = emoji, inverse_mask
 
         img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
-        plt_show_img(detect_emoji(img))
-        #start_cv_video(0, img_filter=detect_emoji)
+        # plt_show_img(detect_emoji(img))
+        start_cv_video(1, img_filter=detect_emoji)
 
     except Exception as error:
         print(error)
