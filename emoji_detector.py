@@ -31,38 +31,27 @@ def classify_mouth(img):
     return max_index
 
 def extract_face_features(img):
+    def has_more_than_3_elements(cnt_list):
+        return len(cnt_list) > 2
+
     original = img.copy()
-    #plt_show_img(img)
     img = process_emoji(img)
     
     filtered_cnt, max_cnt = get_contours(img)
+    if max_cnt is None or len(filtered_cnt) == 0: return [] 
     new_filter = get_inside_face_cnt(filtered_cnt, max_cnt)
+    if not has_more_than_3_elements(new_filter): return []
     emoji_fts = []
-    #mouth_emoji2 = get_mouth(new_filter)
 
     for mouth_emoji in new_filter:
-        if mouth_emoji is None:
-            continue
+        if mouth_emoji is None: continue
         M = cv2.moments(mouth_emoji)
         cy = int(M['m01']/M['m00'])
         x,y,w,h = cv2.boundingRect(mouth_emoji)
         roi = original[y:y+h, x:x+w].copy()
         emoji_fts.append(roi)
-        #plt_show_img(roi)
     
     return emoji_fts
-
-def get_mouth(emoji_cnts):
-    lower_y = -10
-    lower_cnt = None
-    for cnt in emoji_cnts:
-        M = cv2.moments(cnt)
-        cy = int(M['m01']/M['m00'])
-        #print(cy)
-        if cy > lower_y:
-            lower_y = cy
-            lower_cnt = cnt
-    return lower_cnt
 
 def get_inside_face_cnt(emoji_cnts, face_cnt):
     filtered = []
@@ -137,9 +126,9 @@ def detect_emoji(frame, recalculate):
                     
     
     for emoji in possible_emojis:
+        if emoji is None: continue
         cropped_img, cropped_pos = emoji
-        if emoji is None:
-            continue
+        if cropped_img is None: continue
         if not is_square(cropped_img): continue
         cropped_img = resize_image(cropped_img)
         is_emoji = classify_emoji(cropped_img)
