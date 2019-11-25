@@ -52,14 +52,18 @@ def start_video(camera = 0, img_filter = None, *img_filter_params):
 def start_cv_video(camera = 0, img_filter = None, *img_filter_params):
     cap = cv2.VideoCapture(camera)
     print('Press q to exit...')
+    counter = 0
     while(True):
         _, frame = cap.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if img_filter is not None:
-            frame = img_filter(frame, *img_filter_params)
+            frame = img_filter(frame, *img_filter_params, counter == 0)
 
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         cv2.imshow('', frame)
+        print(counter)
+        counter += 1
+        counter = counter % 3
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
