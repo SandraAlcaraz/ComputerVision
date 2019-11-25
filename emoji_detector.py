@@ -33,6 +33,9 @@ def classify_mouth(img):
 def extract_face_features(img):
     def has_more_than_3_elements(cnt_list):
         return len(cnt_list) > 2
+    
+    def has_less_than_6_elements(cnt_list):
+        return len(cnt_list) < 6
 
     original = img.copy()
     img = process_emoji(img)
@@ -40,7 +43,7 @@ def extract_face_features(img):
     filtered_cnt, max_cnt = get_contours(img)
     if max_cnt is None or len(filtered_cnt) == 0: return [] 
     new_filter = get_inside_face_cnt(filtered_cnt, max_cnt)
-    if not has_more_than_3_elements(new_filter): return []
+    if not has_more_than_3_elements(new_filter) and not has_less_than_6_elements(new_filter): return []
     emoji_fts = []
 
     for mouth_emoji in new_filter:
@@ -79,7 +82,8 @@ def get_contours(img):
                 max_cnt = cnt
             filtered_cnt.append(cnt)
 
-    filtered_cnt.remove(max_cnt)
+    if max_cnt in filtered_cnt:
+        filtered_cnt.remove(max_cnt)
     
     return filtered_cnt, max_cnt
 
@@ -175,7 +179,7 @@ def apply_sobel(img, *params):
 
     return new_image
 
-def resize_image(img, d=350):
+def resize_image(img, d=300):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
@@ -209,7 +213,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Emoji segmentation')
-    parser.add_argument('-i', '--image', type=str, action='store', dest='src_img', required=True, help='The input image')
+    parser.add_argument('-i', '--image', type=str, action='store', dest='src_img', required=False, help='The input image')
     args = parser.parse_args()
 
     try:

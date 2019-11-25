@@ -73,7 +73,7 @@ def export_circle_regions(regions, j):
 
 def obtain_circle_positions(img):
     try:
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.8, minDist=90, maxRadius=250, minRadius=20)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.8, minDist=90, maxRadius=200, minRadius=30)#minDist=200, param1=30, param2=45, minRadius=0, maxRadius=0)
     except Exception as e:
         print(e)
 

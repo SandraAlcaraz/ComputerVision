@@ -70,7 +70,8 @@ def draw_contours(img):
                 max_cnt = cnt
             filtered_cnt.append(cnt)
 
-    filtered_cnt.remove(max_cnt)
+    if max_cnt in filtered_cnt:
+        filtered_cnt.remove(max_cnt)
     max_x, max_y , max_w, max_h = cv2.boundingRect(max_cnt)
     filtered_cnt2 = []
 
