@@ -15,6 +15,8 @@ def plt_show_img(img, title=''):
     plt.show()
 
 def cv2_show_img(img):
+    cv2.namedWindow("output", cv2.WINDOW_NORMAL)
+    img = cv2.resize(img, (img.shape[1] // 3, img.shape[0] // 3))
     ANY_KEY = 0
     cv2.imshow('', img)
     cv2.waitKey(ANY_KEY)
