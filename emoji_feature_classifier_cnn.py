@@ -90,7 +90,8 @@ if __name__ == "__main__":
         model = createModel(n_classes, input_shape)
         print('Got model')
         opt = Adam()
-        model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])        print('Compile model')
+        model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+        print('Compile model')
 
         batch_size = 10
         epochs = 100
