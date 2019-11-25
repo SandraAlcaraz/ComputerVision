@@ -89,11 +89,11 @@ if __name__ == "__main__":
         
         model = createModel(n_classes, input_shape)
         print('Got model')
-        opt = RMSprop()
+        opt = SGD()
         model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
         print('Compile model')
 
-        batch_size = 7
+        batch_size = 10
         epochs = 100
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
