@@ -1,5 +1,5 @@
 from emoji_segmentation import emoji_segmentation, get_circle_regions
-from skin_detector.cv_helpers import start_cv_video, plt_show_img
+from skin_detector.cv_helpers import start_cv_video, plt_show_img, cv2_show_img
 
 from cv2 import cv2
 import numpy as np
@@ -164,6 +164,32 @@ def resize_image(img, d=350):
     dim = (d, d)
     return cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
 
+def read_video(video='video.MOV'):
+    cap = cv2.VideoCapture(video)
+    if (not cap.isOpened()): 
+        print("Error opening video stream or file")
+
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+    out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret:
+            # Display the resulting frame
+            # cv2.imshow('', frame)
+            frame = detect_emoji(frame)
+            out.write(frame)
+
+            # Press Q on keyboard to  exit
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+        else: break
+
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+
 if __name__ == '__main__':
     import argparse
 
@@ -183,6 +209,7 @@ if __name__ == '__main__':
 
         img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
         plt_show_img(detect_emoji(img))
+        #cv2_show_img(detect_emoji(img))
         #start_cv_video(0, img_filter=detect_emoji)
 
     except Exception as error:
