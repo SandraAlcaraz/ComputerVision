@@ -23,7 +23,7 @@ def get_train_images():
     Y = []
     
     try:
-        for i in range(0, 7):
+        for i in range(0, 8):
             print('reading: ' + str(i))
             for file in glob.glob(f'roi_emoji/{i}/*.jpg'):
                 img = cv2.imread(file)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         Y_cat_train = to_categorical(Y_train)
         Y_cat_test = to_categorical(Y_test)
         
-        n_classes = 7
+        n_classes = 8
         
         model = createModel(n_classes, input_shape)
         print('Got model')
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         print('Compile model')
 
         batch_size = 30
-        epochs = 100
+        epochs = 20
         datagen = ImageDataGenerator(
                 zoom_range=0.1, # randomly zoom into images
                 rotation_range=5,  # randomly rotate images in the range (degrees, 0 to 180)
