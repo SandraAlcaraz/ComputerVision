@@ -31,7 +31,7 @@ def classify_mouth(img):
         elif i > 0 and mx > max_score:
             max_score = mx
             max_index = i
-    print(eyes_counter)
+    # print(eyes_counter)
     # if eyes_counter < 2: return 0
     return max_index
 
@@ -87,9 +87,14 @@ def get_contours(img):
                 max_cnt = cnt
             filtered_cnt.append(cnt)
 
-    if max_cnt in filtered_cnt:
-        filtered_cnt.remove(max_cnt)
-    
+    try:
+        if max_cnt in filtered_cnt:
+            filtered_cnt.remove(max_cnt)
+    except Exception as error:
+        print(error)
+        filtered_cnt = []
+        max_cnt = None
+
     return filtered_cnt, max_cnt
 
 def draw_emoji(frame, emoji_index, emoji_pos):
@@ -132,7 +137,7 @@ def detect_emoji(frame, recalculate):
     #                 true_emojis.append(emoji_p)
     #             else:
     #                 true_emojis.append(emoji_c)
-                    
+
     for emoji in possible_emojis:
         if emoji is None: continue
         cropped_img, cropped_pos = emoji
@@ -195,13 +200,15 @@ def read_video(video='video.MOV'):
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame_width,frame_height))
-
+    frame_count = 1393
+    cap.set(1, frame_count)
     while(cap.isOpened()):
-        print('Reading frames')
         ret, frame = cap.read()
         if ret:
+            frame_count += 1
             # Display the resulting frame
             #cv2.imshow('', frame)
+            print(frame_count)
             frame = detect_emoji(frame, True)
             out.write(frame)
 
