@@ -10,7 +10,7 @@ EMOJI_1 = None
 EMOJI_DICT = {}
 
 EMOJI_MODEL = keras.models.load_model('filter_model.h5')
-MOUTH_MODEL = keras.models.load_model('filter_model_complete.h5')
+MOUTH_MODEL = keras.models.load_model('filter_model_complete_2.h5')
 
 def classify_emoji(img):
     res = EMOJI_MODEL.predict(np.array([img]) / 255 )[0]
@@ -31,8 +31,8 @@ def classify_mouth(img):
         elif i > 0 and mx > max_score:
             max_score = mx
             max_index = i
-
-    #if eyes_counter != 2: return 0
+    print(eyes_counter)
+    # if eyes_counter < 2: return 0
     return max_index
 
 def extract_face_features(img):
@@ -230,12 +230,12 @@ if __name__ == '__main__':
             inverse_mask = cv2.bitwise_not(mask)
             emoji = cv2.bitwise_and(emoji, emoji, mask=mask)
             EMOJI_DICT[i] = emoji, inverse_mask
-        read_video()
+        # read_video()
 
         #img = cv2.imread(args.src_img, cv2.IMREAD_COLOR)
         #cv2_show_img(detect_emoji(img, True))
         # plt_show_img(detect_emoji(img))
-        #start_cv_video(1, img_filter=detect_emoji)
+        start_cv_video(1, img_filter=detect_emoji)
 
     except Exception as error:
         print(error)

@@ -120,7 +120,7 @@ if __name__ == "__main__":
         model.save('filter_model_complete.h5')
         print('Model saved')
     else:
-        model = keras.models.load_model('filter_model_complete.h5')
+        model = keras.models.load_model('filter_model_complete_2.h5')
         
         X, Y = get_train_images()
         test_size = 0.33
@@ -131,8 +131,10 @@ if __name__ == "__main__":
         nRows,nCols,nDims = X_train.shape[1:]
         X_train = X_train.reshape(X_train.shape[0], nRows, nCols, nDims)
         X_test = X_test.reshape(X_test.shape[0], nRows, nCols, nDims)
-        Y_filter_cat_train = to_categorical(Y_train)
-        Y_filter_cat_test = to_categorical(Y_test)
+        Y_cat_train = to_categorical(Y_train)
+        Y_cat_test = to_categorical(Y_test)
+        print(Y_cat_test.shape)
+        print(np.unique(Y_test))
         
         for _ in range(10):
             t = random.randint(0, len(X_test)-1)
