@@ -120,7 +120,7 @@ def detect_emoji(frame, recalculate):
     
     if recalculate:
         print('recalculating')
-        circles, mask, _ = emoji_segmentation(frame)
+        circles, mask, drawn = emoji_segmentation(frame)
         possible_emojis = get_circle_regions(frame, circles, 1.2)
     
     # true_emojis = []
@@ -232,7 +232,7 @@ if __name__ == '__main__':
         for i in range(1, 7):
             original = cv2.imread(f'emojis/{i}.png', cv2.IMREAD_UNCHANGED)
             r, g, b, a = cv2.split(original)
-            emoji = cv2.merge((r,g,b)).astype('uint8')
+            emoji = cv2.merge((b,g,r)).astype('uint8')
             mask = a.astype('uint8')
             inverse_mask = cv2.bitwise_not(mask)
             emoji = cv2.bitwise_and(emoji, emoji, mask=mask)

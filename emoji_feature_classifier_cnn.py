@@ -43,24 +43,27 @@ def get_train_images():
 
 def createModel(n_classes, input_shape):
     model = Sequential()
-    # The first two layers with 32 filters of window size 3x3
     model.add(Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=input_shape))
     model.add(Conv2D(32, (3, 3), activation='relu'))
+    
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
     model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
     model.add(Conv2D(64, (3, 3), activation='relu'))
+    
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
     model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
     model.add(Conv2D(64, (3, 3), activation='relu'))
+    
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(512, activation='relu'))
+    
     model.add(Dropout(0.5))
     model.add(Dense(n_classes, activation='softmax'))
     
